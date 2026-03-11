@@ -1,0 +1,75 @@
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import json
+import requests
+
+TOKEN = "TOKEN_BOT_TELEGRAM"
+TRIPAY_API = "API_KEY_TRIPAY"
+MERCHANT_CODE = "KODE_MERCHANT_TRIPAY"
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Selamat datang di Digital Store 🚀\n\nKetik /produk untuk melihat produk"
+    )
+
+async def produk(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    with open("products.json") as f:
+        data = json.load(f)
+
+    text = "📦 Daftar Produk\n\n"
+
+    for p in data["products"]:
+        text += f"{p['id']} - {p['name']} (Rp{p['price']})\n"
+
+    text += "\nKetik /beli ID_PRODUK\nContoh: /beli 1"
+
+    await update.message.reply_text(text)
+
+async def beli(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    produk_id = int(context.args[0])
+
+    with open("products.json") as f:
+        data = json.load(f)
+
+    for p in data["products"]:
+
+        if p["id"] == produk_id:
+
+            payload = {
+                "method": "QRIS",
+                "merchant_ref": "INV001",
+                "amount": p["price"],
+                "customer_name": "Telegram User",
+                "order_items": [
+                    {
+                        "sku": str(p["id"]),
+                        "name": p["name"],
+                        "price": p["price"],
+                        "quantity": 1
+                    }
+                ]
+            }
+
+            r = requests.post(
+                "https://tripay.co.id/api/transaction/create",
+                headers={"Authorization": "Bearer "+TRIPAY_API},
+                json=payload
+            )
+
+            data = r.json()
+
+            pay_url = data["data"]["checkout_url"]
+
+            await update.message.reply_text(
+                f"Silahkan bayar di link berikut:\n{pay_url}"
+            )
+
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("produk", produk))
+app.add_handler(CommandHandler("beli", beli))
+
+app.run_polling()
