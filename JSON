@@ -1,0 +1,22 @@
+{
+ "products":[
+  {
+   "id":1,
+   "name":"Template Instagram UMKM",
+   "price":25000,
+   "link":"https://drive.google.com/file1"
+  },
+  {
+   "id":2,
+   "name":"Template Promo Makanan",
+   "price":19000,
+   "link":"https://drive.google.com/file2"
+  },
+  {
+   "id":3,
+   "name":"Paket 100 Template UMKM",
+   "price":79000,
+   "link":"https://drive.google.com/file3"
+  }
+ ]
+}
